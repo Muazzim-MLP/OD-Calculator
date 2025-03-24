@@ -1,0 +1,508 @@
+app.py ##########################################################################################################################################################################################################################
+
+from flask import Flask, render_template, request
+import pandas as pd
+
+app = Flask(__name__)
+
+# Function to read Excel and extract brand-sales structure mapping
+def get_data_from_excel():
+    data = {}
+    file_path = r"C:\Users\admin\Documents\Flask scrape\data.xlsx"  # Update path
+
+    try:
+        gn_df = pd.read_excel(file_path, engine="openpyxl").fillna('')
+    except FileNotFoundError:
+        print("Error: Excel file not found!")
+        return data
+    except Exception as e:
+        print(f"Unexpected error while reading Excel: {e}")
+        return data
+
+    for index, row in gn_df.iterrows():
+        brand = row.get('Brand', '').strip()
+        sales_structure = row.get('Normal Structure (MLP RRP)', '').strip()
+        rrp_formula = row.get('RRP', '').strip()
+        price_formula = row.get('Price', '').strip()
+        data[brand] = [sales_structure, rrp_formula, price_formula]
+
+    return data
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    data = get_data_from_excel()
+    selected_brand = request.form.get('brand', '')
+
+    if selected_brand in data:
+        sales_structure = data[selected_brand][0]
+        rrp_formula = data[selected_brand][1]
+        price_formula = data[selected_brand][2]
+    else:
+        sales_structure = ""
+        rrp_formula = ""
+        price_formula = ""
+
+    return render_template(
+        'index2.html',
+        brands=data.keys(),
+        sales_structure=sales_structure,
+        selected_brand=selected_brand,
+        rrp_formula=rrp_formula,
+        price_formula=price_formula
+    )
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
+
+
+index2.html ##########################################################################################################################################################################################################################
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script defer src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo">
+            <img src="https://s3-eu-west-1.amazonaws.com/tpd/logos/5b0444b28784610001382542/0x0.png" alt="Company Logo" width="250" align-items="center">
+        </div>
+
+        <!-- Dropdown -->
+        <div class="dropdown">
+            <form method="post">
+                <label for="brand"><b>Select brand:</b></label>
+                <select id="brand" name="brand" onchange="this.form.submit()">
+                    <option value="">-- Choose Brand --</option>
+                    {% for brand in brands %}
+                        <option value="{{ brand }}" {% if brand == selected_brand %}selected{% endif %}>{{ brand }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            
+            {% if sales_structure %}
+                <div class="copy-container">
+                    <textarea readonly id="priceStructureBox">{{ sales_structure }}</textarea>
+                    <button class="copy-btn" onclick="copyToClipboard('priceStructureBox')"></button>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Hidden Data for JavaScript -->
+        <div id="formulas" 
+             data-rrp="{{ rrp_formula }}" 
+             data-price="{{ price_formula }}">
+        </div>
+
+        <!-- Calculator -->
+        <div class="calculator">
+            <!-- Input Fields -->
+            <div class="input-group">
+                <label>Input value (x):</label>
+                <input type="number" id="inputValue" oninput="updatePrices()">
+            </div>
+
+            <div class="input-group">
+                <label>Shipping if any (y):</label>
+                <input type="number" id="shippingValue" oninput="updatePrices()">
+            </div>
+
+            <!-- Compare at Price Formula + Result -->
+            <div class="output-group">
+                <label>Compare at price formula:</label>
+                <div class="formula-box" id="compareFormula">RRP Formula</div>
+            </div>
+
+            <div class="output-group">
+                <label>Compare at price:</label>
+                <div class="output-box" id="comparePrice">0</div>
+                <button onclick="toggleVAT('comparePrice')">VAT</button>
+            </div>
+
+            <!-- Price Formula + Result -->
+            <div class="output-group">
+                <label>Price formula:</label>
+                <div class="formula-box" id="priceFormula">Price Formula</div>
+            </div>
+
+            <div class="output-group">
+                <label>Price:</label>
+                <div class="output-box" id="price">0</div>
+                <button onclick="toggleVAT('price')">VAT</button>
+            </div>
+
+            <!-- "Check Margin" Button -->
+            <button id="checkMarginBtn" onclick="showMargin()">Check Margin</button>
+
+            <!-- Selling Price Input (Hidden Initially) -->
+            <div class="input-group hidden" id="sellingPriceSection">
+                <label>Selling Price:</label>
+                <input type="number" id="sellingPrice" oninput="updatePrices()">
+            </div>
+
+            <!-- Price Difference Output (Hidden Initially) -->
+            <div class="output-group hidden" id="priceDifferenceSection">
+                <label>Price Difference:</label>
+                <div class="output-box" id="priceDifference">0</div>
+            </div>
+
+            <!-- Margin Output (Hidden Initially) -->
+            <div class="output-group hidden" id="marginSection">
+                <label>Margin (%):</label>
+                <div class="output-box" id="margin">0</div>
+            </div>
+
+            <!-- Summary Box (Hidden Initially) -->
+            <div class="output-group hidden copy-container" id="summarySection">
+                <label>Summary:</label>
+                <textarea id="summaryBox" readonly></textarea>
+                <button class="copy-btn" onclick="copyToClipboard('summaryBox')"></button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+styles.css ##########################################################################################################################################################################################################################
+
+/* General Styling */
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f4f4f4;
+    margin: 0;
+}
+
+/* Container */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 10px;
+    background-color: #918e8e;
+    padding: 20px;
+    gap: 20px;
+    width: 100%;
+    max-width: 500px; /* Increased width slightly for better layout */
+}
+
+/* Logo */
+.logo img {
+    max-width: 80%;
+    height: auto;
+}
+
+/* Dropdown */
+.dropdown {
+    text-align: center;
+    width: 100%;
+}
+
+select {
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    background: white;
+}
+
+textarea {
+    width: 100%;
+    height: auto;
+    min-height: 50px;
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
+    font-size: 15px;
+    background-color: rgba(159, 212, 145, 0.911);
+    text-align: center;
+    font-weight: bold;
+    color: #333;
+    padding: 10px;
+}
+
+/* Formula Box Styling */
+.formula-box {
+    font-size: 1rem;
+    font-weight: bold;
+    background-color: #0d0e0d;
+    border: 1px solid #a3c293;
+    color: #f8f8f8;
+    text-align: center;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+/* Calculator Box */
+.calculator {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Input & Output Fields Horizontal Layout */
+.input-group, .output-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* Input Fields */
+.calculator input {
+    width: 65%;
+    height: 45px;
+    font-size: 1.2rem;
+    text-align: right;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    background: #f9f9f9;
+    transition: 0.3s;
+}
+
+.calculator input:focus {
+    border-color: #007bff;
+    background: white;
+    outline: none;
+}
+
+/* Output Box */
+.output-box {
+    width: 60%;
+    height: 55px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    background-color: #eef;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+
+/* VAT Toggle Button */
+button {
+    width: 20%;
+    height: 40px;
+    font-size: 1rem;
+    border: none;
+    background: #a2c7ee;
+    color: rgb(8, 8, 8);
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.2s;
+    font-weight: bold;
+}
+
+/* Button hover effect */
+button:hover {
+    background: #0056b3;
+}
+/* Selling Price Input */
+#sellingPrice {
+    width: 65%;
+    height: 45px;
+    font-size: 1.2rem;
+    text-align: right;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    background: #f9f9f9;
+    transition: 0.3s;
+}
+
+#sellingPrice:focus {
+    border-color: #007bff;
+    background: white;
+    outline: none;
+}
+/* Selling Price Input */
+#sellingPrice {
+    width: 65%;
+    height: 45px;
+    font-size: 1.2rem;
+    text-align: right;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    background: #f9f9f9;
+    transition: 0.3s;
+}
+
+#sellingPrice:focus {
+    border-color: #007bff;
+    background: white;
+    outline: none;
+}
+
+/* Output Box */
+.output-box {
+    width: 60%;
+    height: 55px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    background-color: #eef;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+}
+.hidden {
+    display: none;
+}
+
+#summaryBox {
+    width: 100%;
+    height: 100px;
+    font-size: 1rem;
+    text-align: left;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    background: #f9f9f9;
+    resize: none;
+}
+.copy-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.copy-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.copy-btn:hover {
+    background: #218838;
+}
+
+
+script.js ##########################################################################################################################################################################################################################
+
+let originalValues = {};
+
+// Function to update the price outputs dynamically
+function updatePrices() {
+    let inputValue = parseFloat(document.getElementById("inputValue").value) || 0;
+    let shippingValue = parseFloat(document.getElementById("shippingValue").value) || 0;
+    let sellingPrice = parseFloat(document.getElementById("sellingPrice").value) || 0;
+
+    let formulasElement = document.getElementById("formulas");
+    let rrpFormula = formulasElement.getAttribute("data-rrp");
+    let priceFormula = formulasElement.getAttribute("data-price");
+
+    let comparePrice = evaluateFormula(rrpFormula, inputValue);
+    let price = evaluateFormula(priceFormula, inputValue);
+
+    document.getElementById("comparePrice").innerText = comparePrice.toFixed(2);
+    document.getElementById("price").innerText = price.toFixed(2);
+
+    // Update the formula boxes with real values
+    document.getElementById("compareFormula").innerText = rrpFormula.replace(/x/g, inputValue);
+    document.getElementById("priceFormula").innerText = priceFormula.replace(/x/g, inputValue);
+
+    // Calculate Price Difference
+    let priceDifference = sellingPrice - inputValue;
+    document.getElementById("priceDifference").innerText = priceDifference.toFixed(2);
+
+    // Calculate Margin (%)
+    let priceDifferenceIncShip = sellingPrice - inputValue - shippingValue;
+    let margin = (sellingPrice > 0) ? (priceDifferenceIncShip * 100) / sellingPrice : 0;
+    document.getElementById("margin").innerText = margin.toFixed(2) + "%";
+
+    // Update summary box
+    let correctPriceInclVAT = evaluateFormula(priceFormula, inputValue).toFixed(2);
+    let summaryText = `Input value exc. VAT = ${inputValue}\nShipping = ${shippingValue}\nCorrect price incl. VAT = ${correctPriceInclVAT}\nWe are making ${margin.toFixed(2)}% margin`;
+
+    document.getElementById("summaryBox").value = summaryText;
+
+    originalValues["comparePrice"] = comparePrice;
+    originalValues["price"] = price;
+}
+
+// Function to Toggle Selling Price, Margin, and Summary on Button Click
+function showMargin() {
+    let elements = ["sellingPriceSection", "priceDifferenceSection", "marginSection", "summarySection"];
+    elements.forEach(id => document.getElementById(id).classList.toggle("hidden"));
+}
+
+// Function to Evaluate Formulas Dynamically
+function evaluateFormula(formula, x) {
+    if (!formula || formula.trim() === "") return 0;
+    try {
+        return eval(formula.replace(/x/g, x));
+    } catch (error) {
+        console.error("Error evaluating formula:", formula, error);
+        return 0;
+    }
+}
+
+// Function to Copy Text from a Textarea
+function copyToClipboard(elementId) {
+    let textarea = document.getElementById(elementId);
+    textarea.select();
+    textarea.setSelectionRange(0, 99999); // For mobile devices
+    document.execCommand("copy");
+
+    let copyButton = document.querySelector(`[onclick="copyToClipboard('${elementId}')"]`);
+    copyButton.innerText = "✅";
+    setTimeout(() => copyButton.innerText = "📋", 1500);
+}
+
+// Function to Toggle VAT
+function toggleVAT(elementId) {
+    let element = document.getElementById(elementId);
+    let value = parseFloat(element.innerText);
+
+    if (isNaN(value)) return;
+
+    if (!originalValues[elementId]) {
+        originalValues[elementId] = value; 
+    }
+
+    element.innerText = (element.innerText == originalValues[elementId].toFixed(2))
+        ? (originalValues[elementId] / 1.2).toFixed(2)
+        : originalValues[elementId].toFixed(2);
+}
+
+
+
+

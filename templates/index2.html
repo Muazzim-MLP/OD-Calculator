@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script defer src="{{ url_for('static', filename='script.js') }}"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo">
+                <img src="https://s3-eu-west-1.amazonaws.com/tpd/logos/5b0444b28784610001382542/0x0.png" alt="Company Logo" width="250">
+                <h1>Price Calculator</h1>
+        </div>
+
+        <!-- Dropdown -->
+        <div class="dropdown">
+            <form method="post">
+                <label for="brand"><b>Select brand:</b></label>
+                <select id="brand" name="brand" onchange="this.form.submit()">
+                    <option value="">-- Choose Brand --</option>
+                    {% for brand in brands %}
+                        <option value="{{ brand }}" {% if brand == selected_brand %}selected{% endif %}>{{ brand }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+            
+            {% if sales_structure %}
+                <div class="copy-container">
+                    <textarea readonly id="priceStructureBox">{{ sales_structure }}</textarea>
+                    <button class="copy-btn" onclick="copyToClipboard('priceStructureBox')">📋</button>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Hidden Data for JavaScript -->
+        <div id="formulas" 
+             data-rrp="{{ rrp_formula }}" 
+             data-price="{{ price_formula }}">
+        </div>
+
+        <!-- Calculator -->
+        <div class="calculator">
+            <!-- Input Fields -->
+            <div class="input-group">
+                <label>Input value (x):</label>
+                <input type="number" id="inputValue" oninput="updatePrices()">
+            </div>
+
+            <div class="input-group">
+                <label>Shipping if any:</label>
+                <input type="number" id="shippingValue" oninput="updatePrices()">
+            </div>
+
+            <!-- Compare at Price Formula + Result -->
+            <div class="output-group">
+                <label>RRP calculation:</label>
+                <div class="formula-box" id="compareFormula">-</div>
+            </div>
+
+            <div class="output-group">
+                <label id="comparePriceLabel">RRP inc. VAT</label>
+                <div class="output-box" id="comparePrice">0</div>
+                <button onclick="toggleVAT('comparePrice')">VAT</button>
+            </div>
+
+            <!-- Price Formula + Result -->
+            <div class="output-group">
+                <label>Price calculation:</label>
+                <div class="formula-box" id="priceFormula">-</div>
+            </div>
+
+            <div class="output-group">
+                <label id="priceLabel">Price inc. VAT</label>
+                <div class="output-box" id="price">0</div>
+                <button onclick="toggleVAT('price')">VAT</button>
+            </div>
+
+            <!-- "Check Margin" Button -->
+            <button id="checkMarginBtn" onclick="showMargin()">Check Margin</button>
+
+            <!-- Selling Price Input (Hidden Initially) -->
+            <div class="input-group hidden" id="sellingPriceSection">
+                <label>Selling Price:</label>
+                <input type="number" id="sellingPrice" oninput="updatePrices()">
+            </div>
+
+            <!-- Price Difference Output (Hidden Initially) -->
+            <div class="output-group hidden" id="priceDifferenceSection">
+                <label>Price Difference:</label>
+                <div class="output-box" id="priceDifference">0</div>
+            </div>
+
+            <!-- Margin Output (Hidden Initially) -->
+            <div class="output-group hidden" id="marginSection">
+                <label>Margin (%):</label>
+                <div class="output-box" id="margin">0</div>
+            </div>
+
+            <!-- Summary Box (Hidden Initially) -->
+            <div class="output-group hidden copy-container2" id="summarySection">
+                <label> Summary:</label>
+                <textarea id="summaryBox" readonly></textarea>
+                <button class="copy-btn" onclick="copyToClipboard('summaryBox')">📋</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
