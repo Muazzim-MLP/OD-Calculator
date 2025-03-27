@@ -5,10 +5,15 @@ import pandas as pd
 
 app = Flask(__name__)
 
+from flask import Flask, render_template, request
+import pandas as pd
+
+app = Flask(__name__)
+
 # Function to read Excel and extract brand-sales structure mapping
 def get_data_from_excel():
     data = {}
-    file_path = r"C:\Users\admin\Documents\Flask scrape\data.xlsx"  # Update path
+    file_path = r"data2_exl.xlsx"  # Update path
 
     try:
         gn_df = pd.read_excel(file_path, engine="openpyxl").fillna('')
@@ -54,6 +59,8 @@ def index():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
 
+#test
+
 
 index2.html ##########################################################################################################################################################################################################################
 
@@ -70,7 +77,8 @@ index2.html ####################################################################
     <div class="container">
         <!-- Logo -->
         <div class="logo">
-            <img src="https://s3-eu-west-1.amazonaws.com/tpd/logos/5b0444b28784610001382542/0x0.png" alt="Company Logo" width="250" align-items="center">
+                <img src="https://s3-eu-west-1.amazonaws.com/tpd/logos/5b0444b28784610001382542/0x0.png" alt="Company Logo" width="250">
+                <h1>Price Calculator</h1>
         </div>
 
         <!-- Dropdown -->
@@ -88,7 +96,7 @@ index2.html ####################################################################
             {% if sales_structure %}
                 <div class="copy-container">
                     <textarea readonly id="priceStructureBox">{{ sales_structure }}</textarea>
-                    <button class="copy-btn" onclick="copyToClipboard('priceStructureBox')"></button>
+                    <button class="copy-btn" onclick="copyToClipboard('priceStructureBox')">📋</button>
                 </div>
             {% endif %}
         </div>
@@ -104,34 +112,34 @@ index2.html ####################################################################
             <!-- Input Fields -->
             <div class="input-group">
                 <label>Input value (x):</label>
-                <input type="number" id="inputValue" oninput="updatePrices()">
+                <input type="text" id="inputValue" oninput="updatePrices()">
             </div>
 
             <div class="input-group">
-                <label>Shipping if any (y):</label>
-                <input type="number" id="shippingValue" oninput="updatePrices()">
+                <label>Shipping if any:</label>
+                <input type="text" id="shippingValue" oninput="updatePrices()">
             </div>
 
             <!-- Compare at Price Formula + Result -->
             <div class="output-group">
-                <label>Compare at price formula:</label>
-                <div class="formula-box" id="compareFormula">RRP Formula</div>
+                <label>RRP calculation:</label>
+                <div class="formula-box" id="compareFormula">-</div>
             </div>
 
             <div class="output-group">
-                <label>Compare at price:</label>
+                <label id="comparePriceLabel">RRP inc. VAT</label>
                 <div class="output-box" id="comparePrice">0</div>
                 <button onclick="toggleVAT('comparePrice')">VAT</button>
             </div>
 
             <!-- Price Formula + Result -->
             <div class="output-group">
-                <label>Price formula:</label>
-                <div class="formula-box" id="priceFormula">Price Formula</div>
+                <label>Price calculation:</label>
+                <div class="formula-box" id="priceFormula">-</div>
             </div>
 
             <div class="output-group">
-                <label>Price:</label>
+                <label id="priceLabel">Price inc. VAT</label>
                 <div class="output-box" id="price">0</div>
                 <button onclick="toggleVAT('price')">VAT</button>
             </div>
@@ -142,7 +150,7 @@ index2.html ####################################################################
             <!-- Selling Price Input (Hidden Initially) -->
             <div class="input-group hidden" id="sellingPriceSection">
                 <label>Selling Price:</label>
-                <input type="number" id="sellingPrice" oninput="updatePrices()">
+                <input type="text" id="sellingPrice" oninput="updatePrices()">
             </div>
 
             <!-- Price Difference Output (Hidden Initially) -->
@@ -158,10 +166,10 @@ index2.html ####################################################################
             </div>
 
             <!-- Summary Box (Hidden Initially) -->
-            <div class="output-group hidden copy-container" id="summarySection">
-                <label>Summary:</label>
+            <div class="output-group hidden copy-container2" id="summarySection">
+                <label> Summary:</label>
                 <textarea id="summaryBox" readonly></textarea>
-                <button class="copy-btn" onclick="copyToClipboard('summaryBox')"></button>
+                <button class="copy-btn" onclick="copyToClipboard('summaryBox')">📋</button>
             </div>
         </div>
     </div>
@@ -188,17 +196,27 @@ body {
     flex-direction: column;
     align-items: center;
     border-radius: 10px;
-    background-color: #918e8e;
+    background-color: #a8c6d4;
     padding: 20px;
     gap: 20px;
-    width: 100%;
-    max-width: 500px; /* Increased width slightly for better layout */
+    width: 800px;
+    max-width: 1500px; /* Increased width slightly for better layout */
 }
 
 /* Logo */
-.logo img {
+.logo {
+    display: flex;
     max-width: 80%;
     height: auto;
+    align-items: center;
+    gap: 70px;
+    padding: 10px;
+
+}
+
+h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 46px;
 }
 
 /* Dropdown */
@@ -222,11 +240,11 @@ textarea {
     height: auto;
     min-height: 50px;
     margin-top: 10px;
-    border: 1px solid #ccc;
+    border: none;
     border-radius: 5px;
     resize: none;
     font-size: 15px;
-    background-color: rgba(159, 212, 145, 0.911);
+    background-color: transparent;
     text-align: center;
     font-weight: bold;
     color: #333;
@@ -242,7 +260,8 @@ textarea {
     color: #f8f8f8;
     text-align: center;
     padding: 10px;
-    width: 100%;
+    width: 65%;
+    height: 45%;
     margin-bottom: 10px;
     border-radius: 5px;
 }
@@ -253,12 +272,13 @@ textarea {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 450px;
+    width: 80%;
+    max-width: 800px;
     text-align: left;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    /* flex-wrap: wrap; */
+    gap: 20px;
 }
 
 /* Input & Output Fields Horizontal Layout */
@@ -310,7 +330,8 @@ button {
     width: 20%;
     height: 40px;
     font-size: 1rem;
-    border: none;
+    border: 1px solid;
+    border-color: #0d0e0d;
     background: #a2c7ee;
     color: rgb(8, 8, 8);
     cursor: pointer;
@@ -388,25 +409,33 @@ button:hover {
     border: 1px solid #ccc;
     border-radius: 5px;
     padding: 10px;
-    background: #f9f9f9;
+    background: transparent;
     resize: none;
 }
 .copy-container {
     position: relative;
+    background-color: rgba(159, 212, 145, 0.911);
+    border: 1px solid #ccc;
+    margin: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
 .copy-btn {
-    background: #28a745;
+    background: None;
     color: white;
     border: none;
-    padding: 8px 12px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    /* padding-top: 1px; */
+    /* padding: 8px 12px; */
     border-radius: 5px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 24px;
     font-weight: bold;
+    width: 40px;
     transition: background 0.2s;
 }
 
@@ -414,30 +443,57 @@ button:hover {
     background: #218838;
 }
 
+.copy-container2 {
+    position: relative;
+    background-color: rgba(159, 212, 145, 0.911);
+    border: 1px solid #ccc;
+    margin: 1px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
 
 script.js ##########################################################################################################################################################################################################################
 
 let originalValues = {};
 
+// Helper: Evaluate math expression safely
+function evaluateMath(input) {
+    if (!input || input.trim() === '') return 0;
+
+    // Allow only numbers and math operators
+    if (/^[0-9+\-*/().\s]+$/.test(input)) {
+        try {
+            return eval(input);
+        } catch (e) {
+            console.error("Invalid math expression:", input);
+            return 0;
+        }
+    } else {
+        console.warn("Rejected input:", input);
+        return 0;
+    }
+}
+
 // Function to update the price outputs dynamically
 function updatePrices() {
-    let inputValue = parseFloat(document.getElementById("inputValue").value) || 0;
-    let shippingValue = parseFloat(document.getElementById("shippingValue").value) || 0;
-    let sellingPrice = parseFloat(document.getElementById("sellingPrice").value) || 0;
+    let inputValue = evaluateMath(document.getElementById("inputValue").value);
+    let shippingValue = evaluateMath(document.getElementById("shippingValue").value);
+    let sellingPrice = evaluateMath(document.getElementById("sellingPrice").value);
 
     let formulasElement = document.getElementById("formulas");
     let rrpFormula = formulasElement.getAttribute("data-rrp");
     let priceFormula = formulasElement.getAttribute("data-price");
 
     let comparePrice = evaluateFormula(rrpFormula, inputValue);
-    let price = evaluateFormula(priceFormula, inputValue);
+    let price = evaluateFormula2(priceFormula, comparePrice);
 
     document.getElementById("comparePrice").innerText = comparePrice.toFixed(2);
     document.getElementById("price").innerText = price.toFixed(2);
 
     // Update the formula boxes with real values
-    document.getElementById("compareFormula").innerText = rrpFormula.replace(/x/g, inputValue);
-    document.getElementById("priceFormula").innerText = priceFormula.replace(/x/g, inputValue);
+    document.getElementById("compareFormula").innerText = rrpFormula.replace(/x/g, inputValue.toFixed(2));
+    document.getElementById("priceFormula").innerText = priceFormula.replace(/y/g, comparePrice.toFixed(2));
 
     // Calculate Price Difference
     let priceDifference = sellingPrice - inputValue;
@@ -450,7 +506,10 @@ function updatePrices() {
 
     // Update summary box
     let correctPriceInclVAT = evaluateFormula(priceFormula, inputValue).toFixed(2);
-    let summaryText = `Input value exc. VAT = ${inputValue}\nShipping = ${shippingValue}\nCorrect price incl. VAT = ${correctPriceInclVAT}\nWe are making ${margin.toFixed(2)}% margin`;
+    let summaryText = `Input value exc. VAT = ${inputValue}
+Shipping = ${shippingValue}
+Correct price incl. VAT = ${correctPriceInclVAT}
+We are making ${margin.toFixed(2)}% margin`;
 
     document.getElementById("summaryBox").value = summaryText;
 
@@ -464,11 +523,22 @@ function showMargin() {
     elements.forEach(id => document.getElementById(id).classList.toggle("hidden"));
 }
 
-// Function to Evaluate Formulas Dynamically
+// Function to Evaluate Formulas Dynamically (x-based)
 function evaluateFormula(formula, x) {
     if (!formula || formula.trim() === "") return 0;
     try {
         return eval(formula.replace(/x/g, x));
+    } catch (error) {
+        console.error("Error evaluating formula:", formula, error);
+        return 0;
+    }
+}
+
+// Function to Evaluate Formulas Dynamically (y-based)
+function evaluateFormula2(formula, y) {
+    if (!formula || formula.trim() === "") return 0;
+    try {
+        return eval(formula.replace(/y/g, y));
     } catch (error) {
         console.error("Error evaluating formula:", formula, error);
         return 0;
@@ -495,14 +565,21 @@ function toggleVAT(elementId) {
     if (isNaN(value)) return;
 
     if (!originalValues[elementId]) {
-        originalValues[elementId] = value; 
+        originalValues[elementId] = value;
     }
 
-    element.innerText = (element.innerText == originalValues[elementId].toFixed(2))
-        ? (originalValues[elementId] / 1.2).toFixed(2)
+    let isCurrentlyIncVAT = element.innerText == originalValues[elementId].toFixed(2);
+
+    // Toggle VAT value
+    element.innerText = isCurrentlyIncVAT 
+        ? (originalValues[elementId] / 1.2).toFixed(2) 
         : originalValues[elementId].toFixed(2);
+
+    // Update the corresponding label
+    let labelElement = document.getElementById(elementId + "Label");
+    if (labelElement) {
+        labelElement.innerText = isCurrentlyIncVAT 
+            ? labelElement.innerText.replace("inc.", "excl.") 
+            : labelElement.innerText.replace("excl.", "inc.");
+    }
 }
-
-
-
-

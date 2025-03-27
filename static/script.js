@@ -1,10 +1,28 @@
 let originalValues = {};
 
+// Helper: Evaluate math expression safely
+function evaluateMath(input) {
+    if (!input || input.trim() === '') return 0;
+
+    // Allow only numbers and math operators
+    if (/^[0-9+\-*/().\s]+$/.test(input)) {
+        try {
+            return eval(input);
+        } catch (e) {
+            console.error("Invalid math expression:", input);
+            return 0;
+        }
+    } else {
+        console.warn("Rejected input:", input);
+        return 0;
+    }
+}
+
 // Function to update the price outputs dynamically
 function updatePrices() {
-    let inputValue = parseFloat(document.getElementById("inputValue").value) || 0;
-    let shippingValue = parseFloat(document.getElementById("shippingValue").value) || 0;
-    let sellingPrice = parseFloat(document.getElementById("sellingPrice").value) || 0;
+    let inputValue = evaluateMath(document.getElementById("inputValue").value);
+    let shippingValue = evaluateMath(document.getElementById("shippingValue").value);
+    let sellingPrice = evaluateMath(document.getElementById("sellingPrice").value);
 
     let formulasElement = document.getElementById("formulas");
     let rrpFormula = formulasElement.getAttribute("data-rrp");
@@ -31,7 +49,10 @@ function updatePrices() {
 
     // Update summary box
     let correctPriceInclVAT = evaluateFormula(priceFormula, inputValue).toFixed(2);
-    let summaryText = `Input value exc. VAT = ${inputValue}\nShipping = ${shippingValue}\nCorrect price incl. VAT = ${correctPriceInclVAT}\nWe are making ${margin.toFixed(2)}% margin`;
+    let summaryText = `Input value exc. VAT = ${inputValue}
+Shipping = ${shippingValue}
+Correct price incl. VAT = ${correctPriceInclVAT}
+We are making ${margin.toFixed(2)}% margin`;
 
     document.getElementById("summaryBox").value = summaryText;
 
@@ -45,7 +66,7 @@ function showMargin() {
     elements.forEach(id => document.getElementById(id).classList.toggle("hidden"));
 }
 
-// Function to Evaluate Formulas Dynamically
+// Function to Evaluate Formulas Dynamically (x-based)
 function evaluateFormula(formula, x) {
     if (!formula || formula.trim() === "") return 0;
     try {
@@ -56,6 +77,7 @@ function evaluateFormula(formula, x) {
     }
 }
 
+// Function to Evaluate Formulas Dynamically (y-based)
 function evaluateFormula2(formula, y) {
     if (!formula || formula.trim() === "") return 0;
     try {
@@ -96,7 +118,7 @@ function toggleVAT(elementId) {
         ? (originalValues[elementId] / 1.2).toFixed(2) 
         : originalValues[elementId].toFixed(2);
 
-    // Find and update the corresponding label
+    // Update the corresponding label
     let labelElement = document.getElementById(elementId + "Label");
     if (labelElement) {
         labelElement.innerText = isCurrentlyIncVAT 
@@ -104,6 +126,3 @@ function toggleVAT(elementId) {
             : labelElement.innerText.replace("excl.", "inc.");
     }
 }
-
-
-

@@ -6,12 +6,20 @@
     <title>Calculator</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script defer src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <!-- Add jQuery (required for Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Add Select2 CSS and JS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 </head>
 <body>
     <div class="container">
         <!-- Logo -->
         <div class="logo">
-                <img src="https://s3-eu-west-1.amazonaws.com/tpd/logos/5b0444b28784610001382542/0x0.png" alt="Company Logo" width="250">
+                <img src="https://s3-eu-west-1.amazonaws.com/tpd/logos/5b0444b28784610001382542/0x0.png" alt="Company Logo" width="150">
                 <h1>Price Calculator</h1>
         </div>
 
@@ -19,7 +27,7 @@
         <div class="dropdown">
             <form method="post">
                 <label for="brand"><b>Select brand:</b></label>
-                <select id="brand" name="brand" onchange="this.form.submit()">
+                <select id="brand" name="brand" class="brand-select" onchange="this.form.submit()">
                     <option value="">-- Choose Brand --</option>
                     {% for brand in brands %}
                         <option value="{{ brand }}" {% if brand == selected_brand %}selected{% endif %}>{{ brand }}</option>
@@ -46,17 +54,17 @@
             <!-- Input Fields -->
             <div class="input-group">
                 <label>Input value (x):</label>
-                <input type="number" id="inputValue" oninput="updatePrices()">
+                <input type="text" id="inputValue" oninput="updatePrices()">
             </div>
 
             <div class="input-group">
                 <label>Shipping if any:</label>
-                <input type="number" id="shippingValue" oninput="updatePrices()">
+                <input type="text" id="shippingValue" oninput="updatePrices()">
             </div>
 
             <!-- Compare at Price Formula + Result -->
             <div class="output-group">
-                <label>RRP calculation:</label>
+                <!-- <label>RRP calculation:</label> -->
                 <div class="formula-box" id="compareFormula">-</div>
             </div>
 
@@ -68,7 +76,7 @@
 
             <!-- Price Formula + Result -->
             <div class="output-group">
-                <label>Price calculation:</label>
+                <!-- <label>Price calculation:</label> -->
                 <div class="formula-box" id="priceFormula">-</div>
             </div>
 
@@ -84,7 +92,7 @@
             <!-- Selling Price Input (Hidden Initially) -->
             <div class="input-group hidden" id="sellingPriceSection">
                 <label>Selling Price:</label>
-                <input type="number" id="sellingPrice" oninput="updatePrices()">
+                <input type="text" id="sellingPrice" oninput="updatePrices()">
             </div>
 
             <!-- Price Difference Output (Hidden Initially) -->
@@ -107,5 +115,13 @@
             </div>
         </div>
     </div>
+    <script>
+        $(document).ready(function() {
+            $('.brand-select').select2({
+                placeholder: "-- Choose Brand --",
+                width: '60%'
+            });
+        });
+    </script>    
 </body>
 </html>
