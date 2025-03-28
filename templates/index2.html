@@ -23,43 +23,33 @@
                 <h1>Price Calculator</h1>
         </div>
 
-        <!-- Dropdown -->
-        <div class="dropdown">
-            <form method="post">
-                <label for="brand"><b>Select brand:</b></label>
-                <select id="brand" name="brand" class="brand-select" onchange="this.form.submit()">
-                    <option value="">-- Choose Brand --</option>
-                    {% for brand in brands %}
-                        <option value="{{ brand }}" {% if brand == selected_brand %}selected{% endif %}>{{ brand }}</option>
-                    {% endfor %}
-                </select>
-            </form>
-            
-            {% if sales_structure %}
-                <div class="copy-container">
-                    <textarea readonly id="priceStructureBox">{{ sales_structure }}</textarea>
-                    <button class="copy-btn" onclick="copyToClipboard('priceStructureBox')">📋</button>
-                </div>
-            {% endif %}
-        </div>
-
-        <!-- Hidden Data for JavaScript -->
-        <div id="formulas" 
-             data-rrp="{{ rrp_formula }}" 
-             data-price="{{ price_formula }}">
-        </div>
-
         <!-- Calculator -->
         <div class="calculator">
-            <!-- Input Fields -->
-            <div class="input-group">
-                <label>Input value (x):</label>
-                <input type="text" id="inputValue" oninput="updatePrices()">
+
+            <!-- Dropdown -->
+            <div class="dropdown">
+                <form method="post">
+                    <label for="brand"><b>Select brand:</b></label>
+                    <select id="brand" name="brand" class="brand-select" onchange="this.form.submit()">
+                        <option value="">-- Choose Brand --</option>
+                        {% for brand in brands %}
+                            <option value="{{ brand }}" {% if brand == selected_brand %}selected{% endif %}>{{ brand }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+                
+                {% if sales_structure %}
+                    <div class="copy-container">
+                        <textarea readonly id="priceStructureBox">{{ sales_structure }}</textarea>
+                        <button class="copy-btn" onclick="copyToClipboard('priceStructureBox')">📋</button>
+                    </div>
+                {% endif %}
             </div>
 
-            <div class="input-group">
-                <label>Shipping if any:</label>
-                <input type="text" id="shippingValue" oninput="updatePrices()">
+            <!-- Hidden Data for JavaScript -->
+            <div id="formulas" 
+                data-rrp="{{ rrp_formula }}" 
+                data-price="{{ price_formula }}">
             </div>
 
             <!-- Compare at Price Formula + Result -->
@@ -84,6 +74,17 @@
                 <label id="priceLabel">Price inc. VAT</label>
                 <div class="output-box" id="price">0</div>
                 <button onclick="toggleVAT('price')">VAT</button>
+            </div>
+
+            <!-- Input Fields -->
+            <div class="input-group">
+                <label>Input value (x):</label>
+                <input type="text" id="inputValue" oninput="updatePrices()">
+            </div>
+
+            <div class="input-group">
+                <label>Shipping if any:</label>
+                <input type="text" id="shippingValue" oninput="updatePrices()">
             </div>
 
             <!-- "Check Margin" Button -->
