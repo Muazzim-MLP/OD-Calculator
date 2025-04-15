@@ -1,7 +1,10 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, session
+
 import pandas as pd
 
 app = Flask(__name__)
+
+app.secret_key = 'your-secret-key'  # Required for sessions
 
 # Function to read Excel and extract brand-sales structure mapping
 def get_data_from_excel():
@@ -28,6 +31,9 @@ def get_data_from_excel():
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
     data = get_data_from_excel()
     selected_brand = request.form.get('brand', '')
 
@@ -48,6 +54,26 @@ def index():
         rrp_formula=rrp_formula,
         price_formula=price_formula
     )
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if username == 'admin' and password == '1234':
+            session['username'] = username
+            return redirect(url_for('index'))
+        else:
+            error = 'Invalid credentials'
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('login'))
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

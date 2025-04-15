@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            max-width: 80%;
+            height: auto;
+            align-items: center;
+            gap: 40px;
+            padding: 15px;
+
+        }
+
+        .logo img {
+            max-width: 150px;  /* You can adjust this */
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .logo h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 25px;
+        }
+
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+
+        input[type=text], input[type=password] {
+            padding: 8px;
+            margin-top: 10px;
+            width: 100%;
+            background-color: #ebe7e7;  /* 👈 new background color */
+            border: 1px solid #ccc;     /* optional: add subtle border */
+            border-radius: 4px;         /* optional: rounded corners */
+            color: #000;                /* optional: input text color */
+        }
+
+
+        input[type=submit] {
+            margin: 20px auto 0 auto;  /* top, left/right (auto), bottom */
+            display: block;
+            width: 60%;  
+            padding: 10px;
+            color: rgb(7, 7, 7);
+            border-radius: 4px;
+            cursor: pointer;
+            border-width: 1px;
+        }
+    
+        input[type=submit]:hover {
+            background-color: #72777c;
+        }
+
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="https://s3-eu-west-1.amazonaws.com/tpd/logos/5b0444b28784610001382542/0x0.png">
+            <h1>Price Calculator</h1>
+        </div>
+
+        <div class="login-box">
+            <h2>Login</h2>
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+            <form method="post">
+                <input type="text" name="username" placeholder="Username" required><br>
+                <input type="password" name="password" placeholder="Password" required><br>
+                <input type="submit" value="Login">
+            </form>
+        </div>
+    </div>
+</body>
+</html>
