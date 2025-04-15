@@ -126,3 +126,21 @@ function toggleVAT(elementId) {
             : labelElement.innerText.replace("excl.", "inc.");
     }
 }
+
+function resetFields() {
+    document.getElementById("inputValue").value = "";
+    document.getElementById("shippingValue").value = "";
+    document.getElementById("sellingPrice").value = "";
+
+    // Reset all outputs too, if you want
+    document.getElementById("comparePrice").innerText = "0";
+    document.getElementById("price").innerText = "0";
+    document.getElementById("compareFormula").innerText = "-";
+    document.getElementById("priceFormula").innerText = "-";
+    document.getElementById("priceDifference").innerText = "0";
+    document.getElementById("margin").innerText = "0";
+    document.getElementById("summaryBox").value = "";
+
+    // Reset originalValues cache
+    originalValues = {};
+}

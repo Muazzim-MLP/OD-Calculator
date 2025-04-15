@@ -150,23 +150,52 @@ textarea {
     transition: 0.3s;
 }
 
-/* VAT Toggle Button */
-button {
+/* Toggle Button */
+
+#vatBtn {
     width: 12%;
     height: 40px;
     font-size: 1rem;
-    /* border: 1px solid; */
-    /* border-color: #0d0e0d; */
-    background: #b79f37;
-    color: rgb(8, 8, 8);
+    background: #b3b0a2;
+    color: rgb(26, 25, 25);
     cursor: pointer;
-    /* border-radius: 5px; */
     transition: background 0.2s;
     font-weight: bold;
 }
 
+#checkMarginBtn {
+    width: 12%;
+    height: 40px;
+    font-size: 1rem;
+    background: #b79f37;
+    color: rgb(245, 243, 243);
+    cursor: pointer;
+    transition: background 0.2s;
+    font-weight: bold;
+}
+
+#resetFieldsBtn {
+    width: 12%;
+    height: 40px;
+    font-size: 1rem;
+    background: #b73737;
+    color: rgb(245, 243, 243);
+    cursor: pointer;
+    transition: background 0.2s;
+    font-weight: bold;
+}
+
+
 /* Button hover effect */
-button:hover {
+#checkMarginBtn:hover {
+    background: #a08520; /* slightly darker gold */
+}
+
+#resetFieldsBtn:hover {
+    background: #a32b2b; /* slightly darker red */
+}
+
+#vatBtn:hover {
     background: #0056b3;
 }
 /* Selling Price Input */
@@ -189,7 +218,7 @@ button:hover {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 #summaryBox {

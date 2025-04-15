@@ -58,24 +58,6 @@
                 <div class="formula-box" id="compareFormula">-</div>
             </div>
 
-            <div class="output-group">
-                <label id="comparePriceLabel">RRP inc. VAT</label>
-                <div class="output-box" id="comparePrice">0</div>
-                <button onclick="toggleVAT('comparePrice')">VAT</button>
-            </div>
-
-            <!-- Price Formula + Result -->
-            <div class="output-group">
-                <!-- <label>Price calculation:</label> -->
-                <div class="formula-box" id="priceFormula">-</div>
-            </div>
-
-            <div class="output-group">
-                <label id="priceLabel">Price inc. VAT</label>
-                <div class="output-box" id="price">0</div>
-                <button onclick="toggleVAT('price')">VAT</button>
-            </div>
-
             <!-- Input Fields -->
             <div class="input-group">
                 <label>Input value (x):</label>
@@ -87,8 +69,29 @@
                 <input type="text" id="shippingValue" oninput="updatePrices()">
             </div>
 
+            <div class="output-group">
+                <label id="comparePriceLabel">RRP inc. VAT</label>
+                <div class="output-box" id="comparePrice">0</div>
+                <button id="vatBtn" onclick="toggleVAT('comparePrice')">VAT</button>
+            </div>
+
+            <!-- Price Formula + Result -->
+            <div class="output-group">
+                <!-- <label>Price calculation:</label> -->
+                <div class="formula-box" id="priceFormula">-</div>
+            </div>
+
+            <div class="output-group">
+                <label id="priceLabel">Price inc. VAT</label>
+                <div class="output-box" id="price">0</div>
+                <button id="vatBtn" onclick="toggleVAT('price')">VAT</button>
+            </div>
+
             <!-- "Check Margin" Button -->
             <button id="checkMarginBtn" onclick="showMargin()">Check Margin</button>
+
+            <!-- Reset Button -->
+            <button id="resetFieldsBtn" onclick="resetFields()">Clear</button>
 
             <!-- Selling Price Input (Hidden Initially) -->
             <div class="input-group hidden" id="sellingPriceSection">
@@ -109,7 +112,7 @@
             </div>
 
             <!-- Summary Box (Hidden Initially) -->
-            <div class="output-group hidden copy-container2" id="summarySection">
+            <div class="copy-container2 output-group hidden" id="summarySection">
                 <label> Summary:</label>
                 <textarea id="summaryBox" readonly></textarea>
                 <button class="copy-btn" onclick="copyToClipboard('summaryBox')">📋</button>
