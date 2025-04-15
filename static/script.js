@@ -48,7 +48,7 @@ function updatePrices() {
     document.getElementById("margin").innerText = margin.toFixed(2) + "%";
 
     // Update summary box
-    let correctPriceInclVAT = evaluateFormula(priceFormula, inputValue).toFixed(2);
+    let correctPriceInclVAT = evaluateFormula2(priceFormula, comparePrice).toFixed(2);
     let summaryText = `Input value exc. VAT = ${inputValue}
 Shipping = ${shippingValue}
 Correct price incl. VAT = ${correctPriceInclVAT}
